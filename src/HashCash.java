@@ -285,6 +285,7 @@ public class HashCash {
 
         HashCash hashCash = new HashCash(1,20,"Dylan Hoffman");
         System.out.println(hashCash.getChallenge());
+        long start = System.nanoTime();
         hashCash.mine();
 
         if (HashCash.isValidSolution(hashCash.getChallenge(), Integer.toString(hashCash.getNonce()), 20)) {
@@ -293,6 +294,9 @@ public class HashCash {
         } else {
             System.out.println("Puzzle is invalid!!!");
         }
+        long end = System.nanoTime();
+        double result = (double)(end - start) / 1000000000;
+        System.out.println("Running time is: " + result + " seconds");
 
     }
 
