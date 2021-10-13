@@ -18,7 +18,9 @@ public class HashCash {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
     };
 
-    private int nonce;
+    public static final String hashAlgorithm = "SHA-256";
+
+    private long nonce;
     private int difficulty;
     private int version;
     private String resource;
@@ -55,6 +57,15 @@ public class HashCash {
         setChallenge(stringBuilder.toString());
         System.out.println(getChallenge());
 
+    }
+
+    //overloaded constructors
+    public HashCash(String resource){
+        this(1,24, resource);
+    }
+
+    public HashCash (int version, String resource){
+        this(version, 24, resource);
     }
 
     /**
@@ -108,14 +119,14 @@ public class HashCash {
             ByteBuffer buffer = ByteBuffer.allocate(32);
 
             //encode our nonce with Base64
-            String nonceEncoded = generateBase64EncodedString(Integer.toString(this.getNonce()));
+            String nonceEncoded = generateBase64EncodedString(Long.toString(this.getNonce()));
 
             //combine our challenge with the nonce
             String combinedChallengeWithNonce = this.getChallenge() + nonceEncoded;
             System.out.println(combinedChallengeWithNonce);
 
             //hash our combined challenge and nonce strings
-            buffer.put(SHAUtils.digest(combinedChallengeWithNonce.getBytes(StandardCharsets.UTF_8), "SHA-256"));
+            buffer.put(SHAUtils.digest(combinedChallengeWithNonce.getBytes(StandardCharsets.UTF_8), hashAlgorithm));
             System.out.println(SHAUtils.bytesToHex(buffer.array()));
 
             byte[] byteArray = Arrays.copyOf(buffer.array(), buffer.array().length);
@@ -124,15 +135,17 @@ public class HashCash {
             if(isSolved){
                 System.out.println("Puzzle solved!!");
                 System.out.println("Nonce value is: " + getNonce());
-                System.out.println("Encoded is: " + generateBase64EncodedString(Integer.toString(getNonce())));
-                System.out.println("Combined Challenge is: " + combinedChallengeWithNonce);
+                System.out.println("Encoded is: " + generateBase64EncodedString(Long.toString(getNonce())));
+                System.out.println("Combined Challenge with nonce is: " + combinedChallengeWithNonce);
             } else {
                 //we did not find a solution to the challenge
                 //increment our nonce
+                //TODO maybe we want to set the nonce to negative values also?
                 setNonce(getNonce() +1);
             }
 
         }
+
 
     }
 
@@ -151,7 +164,7 @@ public class HashCash {
         String combinedString = challenge + generateBase64EncodedString(nonce);
 
         //hash our combined challenge and nonce strings
-        buffer.put(SHAUtils.digest(combinedString.getBytes(StandardCharsets.UTF_8), "SHA-256"));
+        buffer.put(SHAUtils.digest(combinedString.getBytes(StandardCharsets.UTF_8), hashAlgorithm));
         System.out.println(SHAUtils.bytesToHex(buffer.array()));
 
         byte[] byteArray = Arrays.copyOf(buffer.array(), buffer.array().length);
@@ -197,7 +210,7 @@ public class HashCash {
 
     //getters and setters
 
-    public int getNonce() {
+    public long getNonce() {
         return nonce;
     }
 
@@ -205,7 +218,7 @@ public class HashCash {
      * Getter for private variable nonce
      * @param nonce [int] value to be 'guessed'
      */
-    public void setNonce(int nonce) {
+    public void setNonce(long nonce) {
         this.nonce = nonce;
     }
 
@@ -283,12 +296,12 @@ public class HashCash {
 
     public static void main(String[] args){
 
-        HashCash hashCash = new HashCash(1,20,"Dylan Hoffman");
+        HashCash hashCash = new HashCash(1,24,"Dylan Hoffman");
         System.out.println(hashCash.getChallenge());
         long start = System.nanoTime();
         hashCash.mine();
 
-        if (HashCash.isValidSolution(hashCash.getChallenge(), Integer.toString(hashCash.getNonce()), 20)) {
+        if (HashCash.isValidSolution(hashCash.getChallenge(), Long.toString(hashCash.getNonce()), 20)) {
             System.out.println("Puzzle has valid solution");
             System.out.println(hashCash.getNonce() + " is a valid solution");
         } else {
